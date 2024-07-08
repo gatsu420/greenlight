@@ -42,6 +42,9 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data envelo
 }
 
 func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+	maxBytes := 1_048_576
+	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
+
 	err := json.NewDecoder(r.Body).Decode(dst)
 	if err != nil {
 		var syntaxError *json.SyntaxError
@@ -60,6 +63,8 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 			return fmt.Errorf("body contains incorrect JSON type (at character %v)", unmarshalTypeError.Offset)
 		case errors.Is(err, io.EOF):
 			return fmt.Errorf("body must not be empty")
+		case err.Error() == "http: request body too large":
+			return fmt.Errorf("body must not be larger than %v bytes", maxBytes)
 		case errors.As(err, &invalidUnmarshalError):
 			panic(err)
 		default:

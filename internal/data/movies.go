@@ -10,4 +10,5 @@ type Movie struct {
 	Runtime   Runtime   `json:"runtime"`
 	Genres    []Genre   `json:"genres"`
 	Version   int32     `json:"version"`
+	Stars     []Star    `json:"stars"`
 }

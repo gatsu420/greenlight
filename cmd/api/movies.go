@@ -35,6 +35,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		Runtime:   102,
 		Genres:    []data.Genre{"drama", "romance", "war"},
 		Version:   1,
+		Stars:     []data.Star{"upin", "ipin"},
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)

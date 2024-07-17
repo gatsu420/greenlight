@@ -55,16 +55,22 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 		var unmarshalTypeError *json.UnmarshalTypeError
 		var invalidUnmarshalError *json.InvalidUnmarshalError
 
+		// Example of each case will be given
 		switch {
+		// curl -d '<?xml version="1.0" encoding="UTF-8"?><note><to>Alex</to></note>' localhost:4000/v1/movies
+		// curl -d '{"title": "Moana", }' localhost:4000/v1/movies
 		case errors.As(err, &syntaxError):
 			return fmt.Errorf("body contains badly-formed JSON (at character %v)", syntaxError.Offset)
 		case errors.Is(err, io.ErrUnexpectedEOF):
 			return fmt.Errorf("body contains badly-formed EOF")
 		case errors.As(err, &unmarshalTypeError):
+			// curl -d '{"title": 123}' localhost:4000/v1/movies
 			if unmarshalTypeError.Field != "" {
 				return fmt.Errorf("body contains incorrect JSON type for field %v", unmarshalTypeError.Field)
 			}
+			// curl -d '["foo", "bar"]' localhost:4000/v1/movies
 			return fmt.Errorf("body contains incorrect JSON type (at character %v)", unmarshalTypeError.Offset)
+		// curl -X POST localhost:4000/v1/movies
 		case errors.Is(err, io.EOF):
 			return fmt.Errorf("body must not be empty")
 		case err.Error() == "http: request body too large":
